@@ -3,54 +3,41 @@ import cv2
 # import the modules
 import os
 from os import listdir
+import typer
+
+app =typer.Typer()
 
 
+@app.command()
+def add_logo_to_image(directory_of_img ,name_new_directory,logo_name):
+    os.makedirs(name_new_directory ,exist_ok=True)
 
-#read all images from folder
+    #read all images from folder
+    images = [cv2.imread(file) for file in glob.glob(f"{directory_of_img}/*.jpg")]
+    #read logo 
+    logo =cv2.imread(logo_name)
+        
+    # Determine the region of interest (ROI)
+    rows, cols, channels = logo.shape
+    for index,img in enumerate(images):
+        if img.any() ==None:
+            print("none")
+            break
+        roi = img[0:rows, 0:cols]
+        # Convert the logo to grayscale
+        logo_gray = cv2.cvtColor(logo, cv2.COLOR_BGR2GRAY)
+        #put logo on image 
 
+        dst=cv2.addWeighted(logo,.5,roi,.5,0 ) 
+        name =f"{index}.jpg"
+        path =os.path.join(name_new_directory,name)
+        print(name)
+        # Replace the ROI with the combined image
+        img[0:rows, 0:cols] = dst
+        cv2.imwrite(path,img)
 
-
-images = [cv2.imread(file) for file in glob.glob("imgs/*.jpg")]
-cv2.imshow('img',images[0])
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-
-
-#read logo 
-#put logo on all images 
+ 
+if __name__ =="__main__":
+    app()
 #put all newimages in new file
 
-
-
-def read_images_from_directory(directory):
-    images = []
-    for filename in os.listdir(directory):
-        if filename.endswith(".jpg") or filename.endswith(".png"):
-            image_path = os.path.join(directory, filename)
-            print(image_path)
-            image = cv2.imread(image_path)
-            if image is not None:
-                images.append(image)
-                cv2.imshow("img",image)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-    return images
-
-def write_images_to_directory(images, output_directory):
-    os.makedirs(output_directory, exist_ok=True)
-    for i, image in enumerate(images):
-        output_path = os.path.join(output_directory, f"image_{i}.jpg")
-        cv2.imwrite(output_path, image)
-
-# Example usage
-input_directory = "imgs/"
-output_directory = "/path/to/output/directory"
-
-# Read images from input directory
-images = read_images_from_directory(input_directory)
-
-# Process the images (e.g., apply filters, perform object detection, etc.)
-
-# Write processed images to output directory
-# write_images_to_directory(images, output_directory)
